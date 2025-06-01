@@ -1,17 +1,25 @@
 <template>
-  <dialog
-    ref="dialog"
-    @close="isOpen = false"
-    @click="handleClick"
+  <div
+    id="dialog-backdrop"
+    v-if="isOpen"
+    ref="dialogBackdrop"
+    @keydown="(e) => e.key === 'Escape' && (isOpen = false)"
+    @click="isOpen = false"
   >
-    <component :is="contentComponent" v-if="isOpen" />
-  </dialog>
+    <div id="dialog" aria-modal="true">
+      <component :is="contentComponent" />
+    </div>
+  </div>
 </template>
 
 <script setup lang="ts">
   import { computed, defineAsyncComponent, ref } from 'vue'
   import LoadingComponent from './Loading.vue'
   import ErrorComponent from './Error.vue'
+
+  // This alternative version of the AsyncDialog component uses ordinary divs instead of
+  // the <dialog> element. This is useful for environments where the <dialog> element's
+  // modal nature messes with other dialogs, overlays, or popups.
 
   const props = defineProps<{ content: DialogKey }>()
 
@@ -43,7 +51,6 @@
     ...asyncCompSettings
   })
 
-  const dialog = ref<HTMLDialogElement>(null!)
   const isOpen = ref(false)
 
   const contentComponent = computed(() => {
@@ -59,21 +66,8 @@
     }
   })
 
-  function handleClick(e: MouseEvent) {
-    const rect = dialog.value.getBoundingClientRect();
-    if (
-      e.clientX < rect.left ||
-      e.clientX > rect.right ||
-      e.clientY < rect.top ||
-      e.clientY > rect.bottom
-    ) {
-      dialog.value.close()
-    }
-  }
-
   function show() {
     isOpen.value = true
-    dialog.value.showModal()
   }
 
   defineExpose({ show })
@@ -86,54 +80,44 @@
 </script>
 
 <style scoped>
-  dialog {
-    color: var(--color-text);
-    background: var(--color-background);
+  #dialog-backdrop {
     position: fixed;
     inset: 0;
-    margin: 50vh 50vw;
-    translate: -50% -50%;
+    z-index: 1000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: rgb(0, 0, 0, 0.25);
+    transition: opacity 0.2s ease-in-out,
+                overlay 0.2s allow-discrete,
+                display 0.2s allow-discrete;
+    @starting-style {
+      opacity: 0;
+    }
+  }
+
+  #dialog {
+    color: var(--color-text);
+    background: var(--color-background);
     border: 1px solid var(--color-border);
     border-radius: 8px;
     width: max-content;
     max-width: min(calc(100% - 32px), calc(65em + 32px));
     max-height: calc(100% - 32px);
-    opacity: 0;
-    scale: 20%;
+    padding: 16px;
     transition: scale 0.2s ease-in-out,
                 opacity 0.2s ease-in-out,
                 overlay 0.2s allow-discrete,
                 display 0.2s allow-discrete;
 
-    &::backdrop {
-      background-color: #000;
+    @starting-style {
       opacity: 0;
-      transition: opacity 0.2s ease-in-out,
-                  overlay 0.2s allow-discrete,
-                  display 0.2s allow-discrete;
-    }
-
-    &[open] {
-      opacity: 1;
-      scale: 1;
-
-      &::backdrop {
-        opacity: 25%;
-
-        @starting-style {
-          opacity: 0;
-        }
-      }
-
-      @starting-style {
-        opacity: 0;
-        scale: 20%;
-      }
+      scale: 20%;
     }
   }
 
   @media (prefers-reduced-motion: reduce) {
-    dialog {
+    #dialog {
       transition: none;
     }
   }

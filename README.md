@@ -16,6 +16,12 @@ This is a proof-of-concept for a reusable asynchronous dialog pattern.
 Grab `AsyncDialog.vue` and paste it into your app. Check `App.vue` for how to
 use it.
 
+## Alternative non-modal implementation
+
+In cases where the HTML `<dialog>` element's modal nature causes issues for other
+components that you want to be able to appear on top,
+`AsyncDialogAlternative.vue` may work better.
+
 ## Contributing
 
 Issues and pull requests welcome!
