@@ -1,6 +1,8 @@
 {
   "name": "vue-async-dialog",
+  "description": "A Vue component for loading dialogs asynchronously",
   "version": "0.0.1",
+  "license": "MIT",
   "private": true,
   "type": "module",
   "scripts": {
