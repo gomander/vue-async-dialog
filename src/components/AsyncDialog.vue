@@ -10,21 +10,24 @@
 
 <script setup lang="ts">
   import { computed, defineAsyncComponent, ref } from 'vue'
-  import LoadingComponent from './Loading.vue';
-  import ErrorComponent from './Error.vue';
+  import LoadingComponent from './Loading.vue'
+  import ErrorComponent from './Error.vue'
 
-  const props = defineProps<{ content: 1 | 2 | 3 }>()
+  const props = defineProps<{ content: DialogKey }>()
 
+  // Define the settings for the async components.
   const asyncCompSettings = {
     loadingComponent: LoadingComponent,
     errorComponent: ErrorComponent,
     delay: 200,
     timeout: 3000
   }
+  // DialogContent1 is how most, if not all, of your dialogs will be defined.
   const DialogContent1 = defineAsyncComponent({
     loader: () => import('./DialogContent1.vue'),
     ...asyncCompSettings
   })
+  // DialogContent2 and DialogContent3 are examples of slow and error-prone dialogs.
   const DialogContent2 = defineAsyncComponent({
     loader: async () => {
       await new Promise((resolve) => setTimeout(resolve, 1500))
@@ -45,11 +48,11 @@
   const isOpen = ref(false)
   const contentComponent = computed(() => {
     switch (props.content) {
-      case 1:
+      case '1':
         return DialogContent1
-      case 2:
+      case '2':
         return DialogContent2
-      case 3:
+      case '3':
         return DialogContent3
       default:
         return ErrorComponent
@@ -74,6 +77,12 @@
   }
 
   defineExpose({ show })
+</script>
+
+<script lang="ts">
+  // Define the type for the dialog keys. Use good descriptive names like "SaveDialog".
+  // You can expand this as needed.
+  export type DialogKey = '1' | '2' | '3'
 </script>
 
 <style scoped>
