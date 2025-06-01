@@ -15,34 +15,29 @@
 
   const props = defineProps<{ content: 1 | 2 | 3 }>()
 
-  const DialogContent1 = defineAsyncComponent({
-    loader: async () => {
-      return import('./DialogContent1.vue')
-    },
+  const asyncCompSettings = {
     loadingComponent: LoadingComponent,
     errorComponent: ErrorComponent,
     delay: 200,
     timeout: 3000
+  }
+  const DialogContent1 = defineAsyncComponent({
+    loader: () => import('./DialogContent1.vue'),
+    ...asyncCompSettings
   })
   const DialogContent2 = defineAsyncComponent({
     loader: async () => {
       await new Promise((resolve) => setTimeout(resolve, 1500))
       return import('./DialogContent2.vue')
     },
-    loadingComponent: LoadingComponent,
-    errorComponent: ErrorComponent,
-    delay: 200,
-    timeout: 3000
+    ...asyncCompSettings
   })
   const DialogContent3 = defineAsyncComponent({
     loader: async () => {
       await new Promise((resolve) => setTimeout(resolve, 1000))
       throw new Error('Failed to load content')
     },
-    loadingComponent: LoadingComponent,
-    errorComponent: ErrorComponent,
-    delay: 200,
-    timeout: 3000
+    ...asyncCompSettings
   })
 
   const dialog = ref<HTMLDialogElement>(null!)
@@ -57,7 +52,7 @@
       case 3:
         return DialogContent3
       default:
-        throw new Error('Unknown content type')
+        return ErrorComponent
     }
   })
 
