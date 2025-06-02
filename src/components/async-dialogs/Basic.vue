@@ -1,52 +1,47 @@
 <template>
   <dialog
     ref="dialog"
-    @close="isOpen = false"
+    @close="close"
     @click="handleClick"
   >
-    <component :is="contentComponent" v-if="isOpen" />
+    <ContentComponent
+      v-if="isOpen"
+      @close="close"
+    />
   </dialog>
 </template>
 
 <script setup lang="ts">
   import { computed, defineAsyncComponent, ref } from 'vue'
-  import LoadingComponent from './Loading.vue'
-  import ErrorComponent from './Error.vue'
+  import { asyncCompSettings, ErrorComponent } from '../utility'
 
   const props = defineProps<{ content: DialogKey }>()
 
-  // Define the settings for the async components.
-  const asyncCompSettings = {
-    loadingComponent: LoadingComponent,
-    errorComponent: ErrorComponent,
-    delay: 200,
-    timeout: 3000
-  }
   // DialogContent1 is how most, if not all, of your dialogs will be defined.
   const DialogContent1 = defineAsyncComponent({
-    loader: () => import('./DialogContent1.vue'),
-    ...asyncCompSettings
+    ...asyncCompSettings,
+    loader: () => import('../utility/DialogContent1.vue')
   })
   // DialogContent2 and DialogContent3 are examples of slow and error-prone dialogs.
   const DialogContent2 = defineAsyncComponent({
+    ...asyncCompSettings,
     loader: async () => {
       await new Promise((resolve) => setTimeout(resolve, 1500))
-      return import('./DialogContent2.vue')
-    },
-    ...asyncCompSettings
+      return import('../utility/DialogContent2.vue')
+    }
   })
   const DialogContent3 = defineAsyncComponent({
+    ...asyncCompSettings,
     loader: async () => {
       await new Promise((resolve) => setTimeout(resolve, 1000))
       throw new Error('Failed to load content')
-    },
-    ...asyncCompSettings
+    }
   })
 
   const dialog = ref<HTMLDialogElement>(null!)
   const isOpen = ref(false)
 
-  const contentComponent = computed(() => {
+  const ContentComponent = computed(() => {
     switch (props.content) {
       case '1':
         return DialogContent1
@@ -66,14 +61,17 @@
       e.clientX > rect.right ||
       e.clientY < rect.top ||
       e.clientY > rect.bottom
-    ) {
-      dialog.value.close()
-    }
+    ) close()
   }
 
   function show() {
     isOpen.value = true
     dialog.value.showModal()
+  }
+
+  function close() {
+    isOpen.value = false
+    dialog.value.close()
   }
 
   defineExpose({ show })
